@@ -1,0 +1,11 @@
+{
+    "compilerOptions": {
+        "types": [
+            "vite/client"
+        ],
+        "baseUrl": "src"
+    },
+    "include": [
+        "src"
+    ]
+}
