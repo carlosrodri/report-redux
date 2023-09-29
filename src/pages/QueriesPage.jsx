@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
-import { useTopSubjectQuery } from '../api/queryApi'
-import { Box, Heading, Text } from "@chakra-ui/react";
+import { Divider, Subtitle, AreaChart } from '@tremor/react'
+import { useTopStudentQuery, useGetMinSubjectQuery, useTopAcademicProgramAssitanceQuery, useStudentsByAcademicProgramMaxQuery } from '../api/queryApi'
+import { Box, Button, Heading, Text } from "@chakra-ui/react";
 import {
   Card,
   Grid,
@@ -16,6 +17,7 @@ import {
   DonutChart,
   BarList
 } from "@tremor/react";
+import { CSVLink } from "react-csv";
 
 const chartdata = [
   {
@@ -32,33 +34,33 @@ const chartdata = [
   },
 ];
 
-const chartdata1 = [
-  {
-    year: 1970,
-    "Export Growth Rate": 2.04,
-    "Import Growth Rate": 1.53,
-  },
-  {
-    year: 1971,
-    "Export Growth Rate": 1.96,
-    "Import Growth Rate": 1.58,
-  },
-  {
-    year: 1972,
-    "Export Growth Rate": 1.96,
-    "Import Growth Rate": 1.61,
-  },
-  {
-    year: 1973,
-    "Export Growth Rate": 1.93,
-    "Import Growth Rate": 1.61,
-  },
-  {
-    year: 1974,
-    "Export Growth Rate": 1.88,
-    "Import Growth Rate": 1.67,
-  },
-];
+// const chartdata1 = [
+//   {
+//     year: 1970,
+//     "Export Growth Rate": 2.04,
+//     "Import Growth Rate": 1.53,
+//   },
+//   {
+//     year: 1971,
+//     "Export Growth Rate": 1.96,
+//     "Import Growth Rate": 1.58,
+//   },
+//   {
+//     year: 1972,
+//     "Export Growth Rate": 1.96,
+//     "Import Growth Rate": 1.61,
+//   },
+//   {
+//     year: 1973,
+//     "Export Growth Rate": 1.93,
+//     "Import Growth Rate": 1.61,
+//   },
+//   {
+//     year: 1974,
+//     "Export Growth Rate": 1.88,
+//     "Import Growth Rate": 1.67,
+//   },
+// ];
 
 const cities = [
   {
@@ -186,28 +188,65 @@ const cities = [
 // ];
 
 const QueriesPage = () => {
-  const [dataQuery, setDataQuery] = useState([]);
+  const [dataMin, setDataMin] = useState([]);
+  const [dataMax, setDataMax] = useState({});
+  const [dataStudentTop, setDataStudentTop] = useState([]);
+  const [dataTopAcademicProgram, setDataTopAcademicProgram] = useState([]);
 
-  const { data, isSuccess } = useTopSubjectQuery()
+  const { data, isSuccess } = useGetMinSubjectQuery()
+  const { data: dataMaxS, isSuccess: isSuccessS } = useStudentsByAcademicProgramMaxQuery()
+  const { data: dataStudent, isSuccess: isS } = useTopStudentQuery()
+  const { data: dataAc, isSuccess: isA } = useTopAcademicProgramAssitanceQuery()
 
   useEffect(() => {
-    console.log(isSuccess, data);
     if (isSuccess) {
-      const dataToRender = data.map((item) => {
-        console.log(item);
-        return {
-          name: item.Asignatura,
-          value: item.Total,
+      setDataMin(data.Subjects)
+    }
+
+  }, [isSuccess]);
+
+  useEffect(() => {
+    if (isSuccessS) {
+      setDataMax(dataMaxS)
+    }
+
+  }, [isSuccessS]);
+
+  useEffect(() => {
+    if (isS) {
+      const dataToRender = dataStudent.map((item) => {
+        if (item.Correo) {
+          return {
+            date: item.Correo.trim() || 'Otro',
+            'Cantidad de asistencia por estudiante': item.Total,
+            'Total': item.Total,
+          }
         }
       })
-      console.log('**************', dataToRender);
-      setDataQuery(dataToRender)
+      setDataStudentTop(dataToRender)
     }
-  }, [isSuccess]);
+  }, [isS])
+
+  useEffect(() => {
+    console.log(dataAc, '********', isA);
+
+    if (isA) {
+      console.log(dataAc, '********');
+      const dataToRender = dataAc.map((item) => {
+        if (item.Programa_Academico) {
+          return {
+            name: item.Programa_Academico.trim() || 'Otro',
+            sales: item.Total,
+          }
+        }
+      })
+      setDataTopAcademicProgram(dataToRender)
+    }
+  }, [isA])
 
   return (
     <>
-      {isSuccess
+      {isSuccess && isS && isA && isSuccessS
         ?
         <>
           <Box w='81%' top='0' position='fixed' p='6' rounded='lg' m='35px' border='2px' bg='#111827'>
@@ -216,54 +255,56 @@ const QueriesPage = () => {
           <Box m='35px' mt='115px'>
             <TabGroup className="mt-6">
               <TabList>
-                <Tab>Queries 1</Tab>
-                <Tab>Queries 2</Tab>
+                <Tab>Asistencia</Tab>
+                {/* <Tab>Queries 2</Tab> */}
               </TabList>
               <TabPanels>
                 <TabPanel>
                   <Grid numItemsMd={2} numItemsLg={3} className="gap-6 mt-6">
-                    <Card className="max-w-lg">
-                      <Title>Query 2</Title>
-                      <BarList data={dataQuery} className="mt-2" />
+                    <Card className="max-w-xs mx-auto" decoration="top" decorationColor="indigo">
+                      <Text color={'white'}>Materia con menor asistencia</Text>
+                      <Metric>{dataMin[0]?.trim() || 'Otro'}</Metric>
+                      <Divider />
+                      <Subtitle>{`Cantidad: ${dataMin[1]}`}</Subtitle>
                     </Card>
                     <Card className="max-w-lg">
-                      <Title>Query 3</Title>
+                      <Title>Cantidad de Estudiantes por Programa Académico</Title>
                       <DonutChart
                         className="mt-6"
-                        data={cities}
+                        data={dataTopAcademicProgram}
                         category="sales"
                         index="name"
                         colors={["slate", "violet", "indigo", "rose", "cyan", "amber"]}
                       />
+                      <Button display={'flex'} margin={'auto'} mt={'1rem'}>
+                        <CSVLink data={dataAc}>Descargar reporte</CSVLink>
+                      </Button>
                     </Card>
-                    <Card className="max-w-lg">
-                      <Title>Query 4</Title>
-                      <DonutChart
-                        className="mt-6"
-                        data={cities}
-                        category="sales"
-                        index="name"
-                        colors={["slate", "violet", "indigo", "rose", "cyan", "amber"]}
-                        variant="pie"
-                      />
+                    <Card className="max-w-xs mx-auto" decoration="top" decorationColor="indigo">
+                      <Text color={'white'}>Materia con mayor asistencia</Text>
+                      <Metric>{dataMax.Programa_Academico || 'Otro'}</Metric>
+                      <Divider />
+                      <Subtitle>{`Cantidad: ${dataMax.Total_Estudiantes}`}</Subtitle>
                     </Card>
                   </Grid>
                   <div className="mt-6">
                     <Card>
-                      <Title>Query 5</Title>
-                      <LineChart
-                        className="mt-6"
-                        data={chartdata1}
-                        index="year"
-                        categories={["Export Growth Rate", "Import Growth Rate"]}
-                        colors={["emerald", "gray"]}
-                        yAxisWidth={40}
+                      <Title>Asistencia por estudiante</Title>
+                      <AreaChart
+                        className="h-72 mt-4"
+                        data={dataStudentTop}
+                        index="date"
+                        categories={["Total",]}
+                        colors={["cyan"]}
                       />
+                      <Button display={'flex'} margin={'auto'} mt={'1rem'}>
+                        <CSVLink data={dataStudent}>Descargar reporte</CSVLink>
+                      </Button>
                     </Card>
                   </div>
                 </TabPanel>
                 <TabPanel>
-                  <div className="mt-6">
+                  {/* <div className="mt-6">
                     <Card>
                       <Title>Query 6</Title>
                       <BarChart
@@ -285,7 +326,7 @@ const QueriesPage = () => {
                         <Metric>$ 34,743</Metric>
                       </Card>
                     </Box>
-                  </div>
+                  </div> */}
                 </TabPanel>
               </TabPanels>
             </TabGroup>
