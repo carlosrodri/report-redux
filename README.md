@@ -1,8 +1,24 @@
-# React + Vite
+# Report-redux
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+## Instalaciones previas:
 
-Currently, two official plugins are available:
+1. Instalar NodeJs, enlace de descarga: https://nodejs.org/es Recomendado descargar la versión LTS
+2. Instalar el gestor de paquetes de node `npm`, link de descarga e instalación: https://www.cursosgis.com/como-instalar-node-js-y-npm-en-4-pasos/ recomendable instalar la versión 18.12.1 o superior
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Instalación de dependencias
+
+Dentro de la carpeta del proyecto ejecutar el comando `npm install`
+
+## Ejecución del servidor:
+
+Dentro de la carpeta del proyecto, ejecutar el comando: `npm run dev` para ejecutar el servidor de desarrollo de react y acceder allí a la url: http://localhost:3001
+desde allí ya interactuar con la aplicación
+
+## Navegación dentro de la aplicación
+Dentro de la ruta, dar clic en el botón: Dashboard Carlos y desde allí se muestra el dashboard con 2 botones:
+1. Consulta principal: Se muestra una consulta general y el botón de descarga del archivo perteneciente a dicha consulta
+2. Otras consultas: Se muestran las gráficas de las demás consultas y los botones de descarga de los reportes de algunas de ellas
+
+
+
+
